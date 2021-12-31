@@ -21,6 +21,7 @@ def InitialModel(self, search_space):
     #np.random.seed(self.seed)
     self.rstate = np.random.RandomState(self.seed) if not hasattr(self, 'rstate') else self.rstate
     self.BOLst=dict()
+    self.InValidSP=[]
     # self.trials = Trials()
     kwargs = deepcopy(self.HPO)
     if not hasattr(self, 'isParallel'):
@@ -108,14 +109,11 @@ def runBOWithLimitBudget(self, added_budget):
             #print('______INIT________')  # if self.isInitMode else '*****BO*****')
             if self.isFullSearch:
                 #while self._imax_eval<Total_max_evals:
-                _randomOrder = [x for x, v in enumerate(self._lsstep_size) if v > 0]
+                _randomOrder = [x for x, v in enumerate(self._lsstep_size) if v > 0 and x not in self.InValidSP]
                 if len(_randomOrder) > 0:
                     iid = self.rstate.choice(_randomOrder, 1)[0]
                     #print('______INIT________',iid,_randomOrder)
-                    try:
-                        BO = self.BOLst[iid]
-                    except Exception as e:
-                        print(e)
+                    BO = self.BOLst[iid]
                     _thisStepsize = 1 if self.shuffle == True else self._lsstep_size[iid]
                     self._lsstep_size[iid] = self._lsstep_size[iid] - _thisStepsize
                     _max_eval, _imax_eval = self.eval_count, self.ieval_count
@@ -127,12 +125,13 @@ def runBOWithLimitBudget(self, added_budget):
                     #BO.rstate=self.rstate
                     # BO.n_init_sample = _imax_eval
                     BO.timeout = self.timeout - (time.time() - self.start_time) if self.timeout != None else None
-
                     if self.ieval_count > Total_max_evals or (
                             BO.timeout != None and BO.timeout <= 0) or self.isInitMode == False:
                         # print("BREAK")
                         break
                     _results= BO.AddBudget_run(_thisStepsize)#BO.run()
+                    if BO.isError:
+                        self.InValidSP.append(iid)
                     self.isInitMode = True if self.ieval_count < self._max_init else False
                     ##self.isInitMode =True if len(self._lsstep_size) > 0 else False
                 else:
@@ -141,7 +140,7 @@ def runBOWithLimitBudget(self, added_budget):
                     #self.BO.rstate = self.rstate
                     self.BO.timeout = self.timeout - (
                             time.time() - self.start_time) if self.timeout != None else None
-                    _results= self.BO.AddBudget_run(added_budget)
+                    _results= self.BO.AddBudget_run(_thisStepsize)
                     self.isInitMode = True if self._imax_eval <= self._max_init else False
             else:
                 #self.BO.fix_max_evals = Total_max_evals
@@ -171,10 +170,7 @@ def runBOWithLimitBudget(self, added_budget):
             self.fopt, self.xopt, self._max_eval, self._imax_eval,trials, sp_id, self.rstate = BO.AddBudget_run(_thisStepsize)#BO.run()
         else:
             self.fopt, self.xopt, self._max_eval, self._imax_eval = BO.AddBudget_run(_thisStepsize)  # BO.run()'''
-        if self.isParallel:
-             self.xopt, self.fopt, self.eval_count, self.ieval_count= _results
-        else:
-             self.xopt, self.fopt, self.eval_count, self.ieval_count=_results
+        self.xopt, self.fopt, self.eval_count, self.ieval_count=_results
         self.isInitMode = True if self.ieval_count < self._max_init else False
     '''if (self.isHyperopt):
         _trials = sorted([x for x in self.BO.trials], key=lambda x: x["book_time"])
