@@ -16,12 +16,12 @@ class ObjectiveFunction(object):
     def call(self,params):
         start=time.time()
         #params = self._getparamflat(params)
-        #print('.')
-        _badluck=np.random.choice([0,0],1)
-        if self._checkFobidden(params) or _badluck==1:
+        #print(params)
+        #_badluck=np.random.choice([0,0],1)
+        params = self._getparamflat(params)
+        if self._checkFobidden(params):
             #print('invalid')
             return {'loss': None if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
-
         activeLst=self.getActive(params)
         for x in [x for x in params.keys() if x not in activeLst]:
             print('+++++++++++++++++++++++++++++++++++++++++++',x,'++++++++++++++++++++++++++++++++++')
@@ -29,9 +29,10 @@ class ObjectiveFunction(object):
     def _checkFobidden(self, x_dict):
         _forbidden = self.FoB
         isFOB = False
+
         if (_forbidden != None):
             for fname, fvalue in _forbidden.forbList.items():
-                # print(fname, fvalue.leftvalue, fvalue.rightvalue)
+                #print(fname, fvalue.leftvalue, fvalue.rightvalue)
                 hp_left = [(key, value) for (key, value) in x_dict.items() if
                            key == fvalue.left and len(set([value]).intersection(fvalue.leftvalue)) > 0]
                 hp_right = [(key, value) for (key, value) in x_dict.items() if

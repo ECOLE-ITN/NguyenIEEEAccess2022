@@ -208,7 +208,7 @@ from hyperopt import Trials
 import time
 thistrial=Trials()
 opt = DACOpt(search_space, new_obj, conditional=con, hpo_prefix="name", isDaC=True,
-                HPOopitmizer='hpo', random_seed=1, max_threads=1
+                HPOopitmizer='hpo', random_seed=1, max_threads=2
                 ,eta=3,hpo_trials=thistrial,compare_strategy='highest',
                 max_eval=50,hpo_algo='TPE',show_message=True,
             number_candidates=10, timeout= None#,n_init_sp=10

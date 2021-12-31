@@ -34,6 +34,7 @@ class DACOpt(object):
                  n_init_sample=20,#use for BO: number of init samples
                  hpo_trials=None,
                  hpo_algo= 'tpe',
+                 hpo_max_queue_len=None,
                  show_message=False):
         #DACOpt: parameter setting
         newObjFunc=ObjectiveFunction.ObjectiveFunction(obj_func,conditional,forbidden,hpo_prefix,minimize)
@@ -74,15 +75,17 @@ class DACOpt(object):
         self.opt = OrderedDict()
         self.DAC_kwargs = OrderedDict()
         self.RoundFeeded=[]
+        self.isMaximizeResource=True if hpo_max_queue_len=='auto' else False
         ###mHyperopt:
         if HPOopitmizer.lower() in ['hyperopt','hpo','bo4ml','bo4automl']:
-            hpo_pass_expr_memo_ctrl, hpo_verbose,hpo_max_queue_len,hpo_show_progressbar,hpo_return_argmin,init_ratio  =  None,0,1,True,True,None
+            hpo_pass_expr_memo_ctrl, hpo_verbose,hpo_show_progressbar,hpo_return_argmin,init_ratio  =  None,0,True,True,None
+            hpo_max_queue_len= hpo_max_queue_len if hpo_max_queue_len!=None else 1
             self.isHyperopt=True
             self.BO4ML = dict()
             self.BO4ML['search_space']=search_space
             self.BO4ML['obj_func']=newObjFunc.call
-            self.BO4ML['conditional'] =conditional
-            self.BO4ML['forbidden'] = forbidden
+            self.BO4ML['conditional'] = None if isDaC else conditional
+            self.BO4ML['forbidden'] = None if isDaC else forbidden
             self.BO4ML['SearchType']= 'full' if HPOopitmizer.lower() in ('bo4ml','bo4automl') else 'random'
             self.BO4ML['HPOopitmizer'] = 'hpo'
             self.BO4ML['minimize'] = minimize
@@ -110,6 +113,8 @@ class DACOpt(object):
                 for i,x in enumerate(self.orgSearchspace):
                     self.DAC_kwargs[i]=copy.deepcopy(self.BO4ML)
                     self.DAC_kwargs[i]['search_space'] = x
+                    self.DAC_kwargs[i]['conditional']=search_space._returnCons[i]
+                    self.DAC_kwargs[i]['forbidden'] = search_space._returnForb[i]
                     self.DAC_kwargs[i]['random_seed'] =self.rstate.randint(2 ** 31 - 1)
                     #self.opt[i] = BO4ML(**_DAC_kwargs)
             else:
@@ -169,6 +174,12 @@ class DACOpt(object):
                 n_init_sample = self.DAC_kwargs[i]['n_init_sample']
                 self.DAC_kwargs[i][
                     'n_init_sample'] = x if self.isFair and self.n_init_sp == n_init_sample else n_init_sample
+                max_queues= 1
+                if self.isMaximizeResource:
+                    _thread_ratio=max(1,num_candidate/self.max_threads)
+                    _lastbatch=(num_candidate % self.max_threads)
+                    if _lastbatch==0: _lastbatch=self.max_threads if self.isParallel else 1
+                    max_queues= max(1,self.max_threads/num_candidate) if self.isParallel==False else max_queues
                 # init round has to run seperately to ensure that all candidates samplep
         else:
             if self.stat == False:
@@ -313,7 +324,7 @@ class DACOpt(object):
         #print(sp_id,budget, round_id)
         budget=budgets[sp_id] if isinstance(budgets,list) else budgets
         xopt,fopt=None,None
-        try:
+        if 1==1:
             _imax_eval=0
             if round_id == 0 and (str(round_id)+'-'+str(sp_id)) not in self.RoundFeeded:
                 self.DAC_kwargs[sp_id]['max_eval'] = int(budget)
@@ -332,7 +343,7 @@ class DACOpt(object):
             #self._lsAllResults[sp_id] = [x['loss'] for x in _trials_results if x['status'] == 'ok']
             #self.opt[sp_id]['ieval_count'] = ieval_count
             print('New message::: Round-',round_id,' --candidate ID-', str(sp_id),' -- add:',budget, ' --best-found value: ', str(fopt))
-        except Exception as e:
+        '''except Exception as e:
             self.errList.append(sp_id)
             try:
                 xcatch = [x['loss'] for x in self.opt[sp_id].BO.trials.results if x['status'] == 'ok']
@@ -348,13 +359,13 @@ class DACOpt(object):
                 self.opt[sp_id].eval_hist = xcatch
             except Exception as e2:
                 print('error:',e2)
-            print('New ERROR:::Round-',round_id,' -- Candidate ID-', str(sp_id), '--msg:', e)
+            print('New ERROR:::Round-',round_id,' -- Candidate ID-', str(sp_id), '--msg:', e)'''
         self._lsincumbent[sp_id] = xopt
         if fopt != None:
             self._lsCurrentBest[sp_id] = fopt
         #
     def RunwithBudgetParallel(self,sp_ids,budgetLst, round_id,timeout=None):
-        try:
+        if 1==1:
             _imax_eval=0
             if round_id == 0 and round_id not in self.RoundFeeded:
                 for sp_id in sp_ids:
@@ -399,8 +410,8 @@ class DACOpt(object):
                   str([str(i) + '-' + str(v) for i, v in self._lsCurrentBest.items() if i in sp_ids]))
             del _return
         #print(time.time()-_start)
-        except Exception as e:
-            print('New ERROR:::Round-',round_id, '--msg:', e)
+        #except Exception as e:
+        #    print('New ERROR:::Round-',round_id, '--msg:', e)
 
     def calculateSH(self) -> OrderedDict():
         lsEval = OrderedDict()

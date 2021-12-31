@@ -1,3 +1,5 @@
+import copy
+
 from . import HyperParameter, p_paramrange, ConfigSpace, ConditionalSpace, Forbidden,\
     AlgorithmChoice, CategoricalParam, IntegerParam, FloatParam
 import numpy as np
@@ -18,7 +20,7 @@ def Combine(self, Conditional: ConditionalSpace = None, Forbidden: Forbidden = N
         if ifAllSolution==True:
             return self._conditionalfree(Conditional, Forbidden, 0, ifAllSolution)
         else:
-            return self._combinewithconditional(Conditional,
+            return self._combinewithconditional(Conditional,Forbidden,
                                                 random_seed, min_sp, init_sample, number_candidates)
     else:
         #lsSpace = []
@@ -28,7 +30,7 @@ def Combine(self, Conditional: ConditionalSpace = None, Forbidden: Forbidden = N
         return self
 
 
-def _combinewithconditional(self, cons: ConditionalSpace = None, random_seed=0, min_sp=3,
+def _combinewithconditional(self, cons: ConditionalSpace = None, forb:Forbidden =None, random_seed=0, min_sp=3,
                            init_sample=10, number_candidates=10) -> List[
     HyperParameter]:
     #np.random.seed(random_seed)
@@ -163,18 +165,30 @@ def _combinewithconditional(self, cons: ConditionalSpace = None, random_seed=0, 
                     x[1] == item[0] and len(set(x[2]).intersection(_thisnode))]:
             lsChildEffect.append([str(con[1]) + "_" + "".join(_thisnode), con[0]])
     lsSearchSpace = self.listoutAllBranches(lsVarNameinCons, lsChildEffect, newlsParentName)
-    _returnSubSpaces=[]
+    _returnSubSpaces,_returnCons,_returnForb=[],[],[]
     _ratio=[]
     for x in lsSearchSpace:
         _configSpace=ConfigSpace()
         _configSpace.add_multiparameter([i for i in x])
+        #fix bug smaller conditional space
+        _lsVarNames=np.unique([i.var_name for i in x])
+        _newcons=ConditionalSpace('n-name')
+        _newcons.conditional=OrderedDict({i:v for i,v in cons.conditional.items() if v[0] in _lsVarNames and v[1] in _lsVarNames})
+        _newcons.AllConditional = OrderedDict({i: v for i, v in cons.AllConditional.items() if
+                                v[0] in _lsVarNames or v[1] in _lsVarNames})
         _numberofPipeline=np.product([len(i.bounds) for i in x if isinstance(i,AlgorithmChoice)])
+        _newforb=Forbidden()
+        _newforb.forbList=OrderedDict({i:v for i,v in forb.forbList.items() if v.left in _lsVarNames and v.right in _lsVarNames})
         _numberofParameters=len(x)
         _ratio.append(_numberofPipeline)
         _returnSubSpaces.append(_configSpace)
+        _returnCons.append(_newcons)
+        _returnForb.append(_newforb)
     _avgratio=np.mean(_ratio)
     _ratio=[(x/_avgratio) for x in _ratio]
     self._ratio=_ratio
+    self._returnCons=_returnCons
+    self._returnForb=_returnForb
     return _returnSubSpaces
 def listoutAllBranches(self, lsvarname, childeffect, lsparentname) -> List[HyperParameter]:
     np.random.RandomState(24)
