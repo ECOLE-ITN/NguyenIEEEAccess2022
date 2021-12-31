@@ -73,8 +73,8 @@ def InitialModel(self, search_space):
 
             #kwargs['timeout'] = self.timeout - (
             #        time.time() - self.start_time) if self.timeout != None else None
-            if _imax_eval > _max_init or (kwargs['timeout'] != None and kwargs['timeout'] <= 0):
-                break
+            #if _imax_eval > _max_init or (kwargs['timeout'] != None and kwargs['timeout'] <= 0):
+            #    break
             #kwargs['algo'] = rand.suggest
             self.BOLst[iid] = HO.HyperOpt(**kwargs)
     kwargs['rstate'] = self.rstate
@@ -85,7 +85,7 @@ def InitialModel(self, search_space):
     self.isModelCreated=True
     return
 def runBOWithLimitBudget(self, added_budget):
-    self.start_time = time.time() #Hack for parallel
+
     if not hasattr(self, 'isModelCreated') or self.xopt==None:
         self.isModelCreated=False
         self.InitialModel(self.searchspace)
@@ -100,7 +100,7 @@ def runBOWithLimitBudget(self, added_budget):
         pass
     self.isInitMode=True if  self.ieval_count<self._max_init else False
     Total_max_evals=self.ieval_count+added_budget
-
+    self.start_time = time.time()  # Hack for parallel
     #print('Timeout:', self.timeout)
     while (self.ieval_count < Total_max_evals and ((self.timeout - (time.time() - self.start_time)>0) if self.timeout != None else True)  ):
         _thisStepsize = Total_max_evals-self.ieval_count

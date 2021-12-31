@@ -265,7 +265,7 @@ class DACOpt(object):
                         #print(_lsstep_size_temp)
                         #_lsstep_size_temp = [int(np.floor(x * _timeUsedRatio)) for x in _lsstep_size_temp] if isinstance(_lsstep_size_temp,list) else int(np.floor(_lsstep_size_temp*_timeUsedRatio))
                         #print('Computation is cheaper than estimated, an additional budgets is added to this round...')
-                        if self.show_message:print('Round', _strRound, 'message: still some time left, an additional budgets is added to this round:', _lsstep_size_temp)
+                        if self.show_message and sum(_lsstep_size_temp)>0:print('Round', _strRound, 'message: still some time left, an additional budgets is added to this round:', _lsstep_size_temp)
                     else:
                         _lsstep_size_temp = 0
                         if self.show_message:

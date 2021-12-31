@@ -21,7 +21,7 @@ class ObjectiveFunction(object):
         params = self._getparamflat(params)
         if self._checkFobidden(params):
             #print('invalid')
-            return {'loss': None if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
+            return {'loss': 1 if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
         activeLst=self.getActive(params)
         for x in [x for x in params.keys() if x not in activeLst]:
             print('+++++++++++++++++++++++++++++++++++++++++++',x,'++++++++++++++++++++++++++++++++++')
