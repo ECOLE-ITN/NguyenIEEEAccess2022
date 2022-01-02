@@ -246,7 +246,7 @@ class DACOpt(object):
                 self.rstate.shuffle(_processID)
                 _set_localtimeout=(_remain_time_this_round/_run_needed) if self.timeout!=None else None
                 #print('_set_localtimeout',_set_localtimeout)
-                self.RunwithBudgetParallel(_processID, _lsstep_size_temp, iround,_set_localtimeout) if self.isParallel else [
+                self.RunwithBudgetParallel(_processID, _lsstep_size_temp, iround,_set_localtimeout) if self.isParallel and len(_processID)>1 else [
                     self.RunwithBudget(x, _lsstep_size_temp, iround,_set_localtimeout) for i, x in enumerate(_processID)]
                 #time.sleep(3)
                 _repeated+=1
@@ -333,12 +333,14 @@ class DACOpt(object):
                 self.DAC_kwargs[sp_id]['max_eval'] = int(budget)
                 self.DAC_kwargs[sp_id]['timeout'] = timeout
                 self.opt[sp_id] = BO4ML(**self.DAC_kwargs[sp_id])
+                self.opt[sp_id].isParallel = False
                 #xopt, fopt,_max_eval, _imax_eval = self.opt[sp_id].runBOWithLimitBudget(int(budget))
             else:
                 self.DAC_kwargs[sp_id]['timeout'] = timeout
                 self.DAC_kwargs[sp_id]['max_eval'] += int(budget)
                 self.opt[sp_id].max_eval+= int(budget)
                 self.opt[sp_id].timeout=timeout
+                self.opt[sp_id].isParallel = False
             self.RoundFeeded.append(str(round_id)+'-'+str(sp_id))
             xopt, fopt,_max_eval, _imax_eval = self.opt[sp_id].runBOWithLimitBudget(int(budget))
             self.lseval_count[sp_id]=_imax_eval

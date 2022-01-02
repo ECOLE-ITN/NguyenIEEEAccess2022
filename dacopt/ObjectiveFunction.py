@@ -23,10 +23,10 @@ class ObjectiveFunction(object):
         if self._checkFobidden(_params):
             #print('invalid')
             return {'loss': 1 if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
-        activeLst=self.getActive(_params)
+        '''activeLst=self.getActive(_params)
         for x in [x for x in _params.keys() if x not in activeLst]:
             #pass
-            print('+++++++++++++++++++++++++++++++++++++++++++',x,'++++++++++++++++++++++++++++++++++')
+            print('+++++++++++++++++++++++++++++++++++++++++++',x,'++++++++++++++++++++++++++++++++++')'''
         return self.objFunc(_params if self.isFlat else params)
     def _checkFobidden(self, x_dict):
         _forbidden = self.FoB
