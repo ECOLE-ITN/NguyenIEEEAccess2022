@@ -177,13 +177,17 @@ def _combinewithconditional(self, cons: ConditionalSpace = None, forb:Forbidden 
         _newcons.AllConditional = OrderedDict({i: v for i, v in cons.AllConditional.items() if
                                 v[0] in _lsVarNames or v[1] in _lsVarNames})
         _numberofPipeline=np.product([len(i.bounds) for i in x if isinstance(i,AlgorithmChoice)])
-        _newforb=Forbidden()
-        _newforb.forbList=OrderedDict({i:v for i,v in forb.forbList.items() if v.left in _lsVarNames and v.right in _lsVarNames})
+        if forb != None:
+            _newforb=Forbidden()
+            _newforb.forbList=OrderedDict({i:v for i,v in forb.forbList.items() if v.left in _lsVarNames and v.right in _lsVarNames})
+            _returnForb.append(_newforb)
+        else:
+            _returnForb.append(None)
         _numberofParameters=len(x)
         _ratio.append(_numberofPipeline)
         _returnSubSpaces.append(_configSpace)
         _returnCons.append(_newcons)
-        _returnForb.append(_newforb)
+
     _avgratio=np.mean(_ratio)
     _ratio=[(x/_avgratio) for x in _ratio]
     self._ratio=_ratio

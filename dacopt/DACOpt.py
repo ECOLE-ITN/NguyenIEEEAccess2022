@@ -35,9 +35,11 @@ class DACOpt(object):
                  hpo_trials=None,
                  hpo_algo= 'tpe',
                  hpo_max_queue_len=None,
-                 show_message=False):
+                 show_message=False,
+                 isFlatSetting=True
+                 ):
         #DACOpt: parameter setting
-        newObjFunc=ObjectiveFunction.ObjectiveFunction(obj_func,conditional,forbidden,hpo_prefix,minimize)
+        newObjFunc=ObjectiveFunction.ObjectiveFunction(obj_func,conditional,forbidden,hpo_prefix,minimize,isFlatSetting)
         self.eta=eta
         self.eval_count = 0
         self.stop_dict = {}
@@ -76,6 +78,7 @@ class DACOpt(object):
         self.DAC_kwargs = OrderedDict()
         self.RoundFeeded=[]
         self.isMaximizeResource=True if hpo_max_queue_len=='auto' else False
+        self.isFlatSetting=isFlatSetting
         ###mHyperopt:
         if HPOopitmizer.lower() in ['hyperopt','hpo','bo4ml','bo4automl']:
             hpo_pass_expr_memo_ctrl, hpo_verbose,hpo_show_progressbar,hpo_return_argmin,init_ratio  =  None,0,True,True,None

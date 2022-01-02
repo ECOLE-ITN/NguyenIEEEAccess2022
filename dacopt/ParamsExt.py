@@ -261,8 +261,8 @@ def _updatebounds(values, OriBounds, _return:list()=[]):
                     #_return.append(b)
                     _return.append(b) if len(_return) > 0 else _return.extend(b)
             else:
-                if len(set(values).intersection(list(x)))>0:
-                    _return.extend(x)
+                #if len(set(values).intersection([x]))>0:
+                if x in values:_return.extend([x])
     else:
         _temp_return=sorted(list(set(values).intersection(list(OriBounds))), key=lambda x: str(x))
         _return.extend(_temp_return)

@@ -6,26 +6,28 @@ import numpy as np
 import time
 __author__ = "Duc Anh Nguyen"
 class ObjectiveFunction(object):
-    def __init__(self,objFunc, cons:ConditionalSpace, fob: Forbidden, prefix='value', isMinimize=True):
+    def __init__(self,objFunc, cons:ConditionalSpace, fob: Forbidden, prefix='value', isMinimize=True,isFlatSetting=False):
         self.cons=cons
         self.objFunc=objFunc
         self.FoB=fob
         self.prefix=prefix
         self.isMinimize=isMinimize
+        self.isFlat=isFlatSetting
 
     def call(self,params):
         start=time.time()
         #params = self._getparamflat(params)
         #print(params)
         #_badluck=np.random.choice([0,0],1)
-        params = self._getparamflat(params)
-        if self._checkFobidden(params):
+        _params = self._getparamflat(params)
+        if self._checkFobidden(_params):
             #print('invalid')
             return {'loss': 1 if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
-        activeLst=self.getActive(params)
-        for x in [x for x in params.keys() if x not in activeLst]:
+        activeLst=self.getActive(_params)
+        for x in [x for x in _params.keys() if x not in activeLst]:
+            #pass
             print('+++++++++++++++++++++++++++++++++++++++++++',x,'++++++++++++++++++++++++++++++++++')
-        return self.objFunc(params)
+        return self.objFunc(_params if self.isFlat else params)
     def _checkFobidden(self, x_dict):
         _forbidden = self.FoB
         isFOB = False

@@ -12,20 +12,20 @@ if 1==1:
     search_space = ConfigSpace()
     con = ConditionalSpace("test")
     random_state = CategoricalParam(randomstate, 'random_state')
-    alg_namestr = AlgorithmChoice(['SVM', 'RF'], 'classifier', default='SVM')
+    alg_namestr = AlgorithmChoice(['SVM', 'RF', 'KNN', 'DTC', 'LR'], 'classifier', default='SVM')
     search_space.add_multiparameter([random_state, alg_namestr])
     # SVM
     probability = CategoricalParam([True, False], 'probability')
     C = FloatParam([0.03125, 200], 'C')
     kernel = CategoricalParam(['linear', 'rbf', 'poly', 'sigmoid'], 'kernel', default='linear')
     degree = IntegerParam([2, 5], 'degree')
-    #gamma = CategoricalParam([['auto', 'scale'], 'value'], 'gamma', default='auto')
-    gamma_value = FloatParam([3.1E-05, 80], 'gamma')
+    gamma = CategoricalParam([['auto', 'scale'], 'value'], 'gamma', default='auto')
+    gamma_value = FloatParam([3.1E-05, 8], 'gamma_value')
     coef0 = FloatParam([-1, 1], 'coef0')
     shrinking = CategoricalParam([True, False], 'shrinking')
     tol_svm = FloatParam([1e-05, 1e-01], 'tol')
-    search_space.add_multiparameter([probability, C, kernel, degree,  gamma_value, coef0, shrinking, tol_svm])
-    con.addMutilConditional([probability, C, kernel, degree,  gamma_value, coef0, shrinking, tol_svm],
+    search_space.add_multiparameter([probability, C, kernel, degree, gamma, gamma_value, coef0, shrinking, tol_svm])
+    con.addMutilConditional([probability, C, kernel, degree, gamma, gamma_value, coef0, shrinking, tol_svm],
                             alg_namestr, 'SVM')
     # con.addConditional(gamma_value, gamma,'value')
     ##RF
@@ -40,7 +40,7 @@ if 1==1:
         [n_estimators, criterion, max_features_RF, min_samples_split, min_samples_leaf, bootstrap, class_weight])
     con.addMutilConditional([n_estimators, criterion, max_features_RF, min_samples_split,
                              min_samples_leaf, bootstrap, class_weight], alg_namestr, 'RF')
-    '''###KNN
+    ###KNN
     n_neighbors_knn = IntegerParam([1, 51], 'n_neighbors_knn')
     weights = CategoricalParam(['uniform', 'distance'], 'weights')
     algorithm = CategoricalParam(['auto', 'ball_tree', 'kd_tree', 'brute'], 'algorithm')
@@ -68,22 +68,15 @@ if 1==1:
     tol_lr = FloatParam([1e-05, 1e-01], 'tol_lr')
     l1_ratio = FloatParam([1e-09, 1], 'l1_ratio')
     search_space.add_multiparameter([C_lr, penalty_solver, tol_lr, l1_ratio])
-    con.addMutilConditional([C_lr, penalty_solver, tol_lr, l1_ratio], alg_namestr, 'LR')'''
-    #anh = AlgorithmChoice(['ANH', ['A', ['E', 'F'], ['5', '6'], ['7', '8']], ['B', ['C', 'D', ['1', '2'], ['3', '4'], ['x', 'y']]]],'Anh')
-    #con.addMutilConditional([random_state], anh, ['ANH','A', 'E', 'F',5,6,7,8, 'B', 'C', 'D', '1', '2', '3', '4', 'x', 'y'])
-    #search_space._add_singleparameter(anh)
-    smo_type = AlgorithmChoice(
-        [['NO'], ['SMOTE', 'SMOTENC','SVMSMOTE', 'KMeansSMOTE', 'BorderlineSMOTE', 'ADASYN', 'RandomOverSampler']
-            , ['SMOTEENN', 'SMOTETomek'],
-         ['CondensedNearestNeighbour', 'EditedNearestNeighbours', 'RepeatedEditedNearestNeighbours', 'AllKNN',
-          'InstanceHardnessThreshold', 'NearMiss', 'NeighbourhoodCleaningRule',
-          'OneSidedSelection', 'RandomUnderSampler', 'TomekLinks', 'ClusterCentroids']], 'resampler')
-    smo_type1 = AlgorithmChoice(
-        [['NO'], ['SMOTE', 'SMOTENC', 'SVMSMOTE', 'KMeansSMOTE', 'BorderlineSMOTE', 'ADASYN', 'RandomOverSampler']
-            , ['SMOTEENN', 'SMOTETomek'],
-         ['CondensedNearestNeighbour', 'EditedNearestNeighbours', 'RepeatedEditedNearestNeighbours', 'AllKNN',
-          'InstanceHardnessThreshold', 'NearMiss', 'NeighbourhoodCleaningRule',
-          'OneSidedSelection', 'RandomUnderSampler', 'TomekLinks', 'ClusterCentroids']], 'resampler')
+    con.addMutilConditional([C_lr, penalty_solver, tol_lr, l1_ratio], alg_namestr, 'LR')
+    smo_type = AlgorithmChoice([['NO'], ['SMOTEENN', 'SMOTETomek'],
+                                [['SMOTE', 'BorderlineSMOTE', 'KMeansSMOTE', 'SMOTENC', 'SVMSMOTE'],
+                                 'RandomOverSampler', 'ADASYN'],
+                                [['ClusterCentroids'], ['NearMiss', 'RandomUnderSampler'],
+                                 [['TomekLinks', 'OneSidedSelection'], 'InstanceHardnessThreshold',
+                                  ['EditedNearestNeighbours', 'RepeatedEditedNearestNeighbours', 'AllKNN'],
+                                  ['CondensedNearestNeighbour', 'NeighbourhoodCleaningRule']]]], 'resampler')
+
     search_space._add_singleparameter(smo_type)
     k_neighbors_SMOTE = IntegerParam([1, 10], 'k_neighbors_SMOTE')
     k_neighbors_Borderline = IntegerParam([1, 10], 'k_neighbors_Borderline')
@@ -164,7 +157,7 @@ resampler_group={'NO':'NO','NONE':'NONE','SMOTE':'OVER','BorderlineSMOTE':'OVER'
                             'TomekLinks':'UNDER','ClusterCentroids':'UNDER'}
 rstate = np.random.RandomState(9)
 def new_obj(params):
-    print(params)
+    #print(params)
     global resampler_group,i,rstate
     i=i+1
     '''Anh=params['Anh']['name']
@@ -179,7 +172,7 @@ def new_obj(params):
     sampler = resampler_group[p_sub_type]
     #print(classifier,p_sub_type,sampler)
     _result = np.random.uniform(0, 0.5) if Anh=='ANH' else np.random.uniform(0.1,1)'''
-    _result =rstate.uniform(0, 1)
+    _result =np.random.uniform(0, 1)
     #print(i,classifier,sampler,p_sub_type,_result)
     #if i>248:
     #print(i,_result)
@@ -209,10 +202,10 @@ import time
 thistrial=Trials()
 opt = DACOpt(search_space, new_obj, conditional=con, hpo_prefix="name", isDaC=True,
                 HPOopitmizer='hpo', random_seed=1, max_threads=2
-                ,eta=3,hpo_trials=thistrial,compare_strategy='highest',
-                max_eval=50,hpo_algo='TPE',show_message=True,
+                ,eta=2,hpo_trials=thistrial,compare_strategy='highest',
+                max_eval=250,hpo_algo='TPE',show_message=True,
             number_candidates=10, timeout= None#,n_init_sp=10
-            , n_init_sample=5)
+            , n_init_sample=5, isFlatSetting=False  )
 _starttime=time.time()
 opt.start_time=time.time()
 xopt, fopt, _, eval_count = opt.run()
