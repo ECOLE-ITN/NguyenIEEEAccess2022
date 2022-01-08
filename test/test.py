@@ -157,7 +157,7 @@ resampler_group={'NO':'NO','NONE':'NONE','SMOTE':'OVER','BorderlineSMOTE':'OVER'
                             'TomekLinks':'UNDER','ClusterCentroids':'UNDER'}
 rstate = np.random.RandomState(9)
 def new_obj(params):
-    #print(params)
+    print(params)
     global resampler_group,i,rstate
     i=i+1
     '''Anh=params['Anh']['name']
@@ -204,7 +204,7 @@ opt = DACOpt(search_space, new_obj, conditional=con, hpo_prefix="name", isDaC=Tr
                 HPOopitmizer='hpo', random_seed=1, max_threads=2
                 ,eta=2,hpo_trials=thistrial,compare_strategy='highest',
                 max_eval=250,hpo_algo='TPE',show_message=True,
-            number_candidates=10, timeout= None#,n_init_sp=10
+            number_candidates=10, timeout= None,n_init_sp=10
             , n_init_sample=5, isFlatSetting=False  )
 _starttime=time.time()
 opt.start_time=time.time()

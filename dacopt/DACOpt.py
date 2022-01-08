@@ -145,7 +145,8 @@ class DACOpt(object):
         while (_remainEvals> 0) and (_remain_time_this_round > 0 if self.timeout != None else True):
             _processID, _lsstep_size, num_candidate = self._createRoundParameters(iround, num_races, num_candidate,_processID)
             if self.show_message:print("Round: ", ('INIT' if iround == 0 else iround), " === ", num_candidate, " search space(s) === runs:", _lsstep_size)
-            self.rstate.shuffle(_processID)
+            if iround==0:
+                self.rstate.shuffle(_processID)
             _run_needed = max(1, len(_processID) / self.max_threads)
             _set_localtimeout = (_remain_time_this_round/_run_needed) if self.timeout!=None else None
             self.RunwithBudgetParallel(_processID, _lsstep_size, iround,
@@ -243,7 +244,8 @@ class DACOpt(object):
             _init_counted = [(self.lseval_count[x] if x in _processID else 0) for x in range(0, self.number_candidates)] if len(self.lseval_count) > 0 else [0] * num_candidate
             _repeated=0
             while ((sum(_lsstep_size_temp) if isinstance(_lsstep_size_temp,list) else _lsstep_size_temp)>0) and (_remain_time_this_round > 0 if self.timeout !=None else True):
-                self.rstate.shuffle(_processID)
+                if iround == 0:
+                    self.rstate.shuffle(_processID)
                 _set_localtimeout=(_remain_time_this_round/_run_needed) if self.timeout!=None else None
                 #print('_set_localtimeout',_set_localtimeout)
                 self.RunwithBudgetParallel(_processID, _lsstep_size_temp, iround,_set_localtimeout) if self.isParallel and len(_processID)>1 else [
