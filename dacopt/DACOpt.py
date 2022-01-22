@@ -5,7 +5,7 @@ from collections import OrderedDict
 from scipy.stats import friedmanchisquare, ttest_ind, wilcoxon
 import numpy as np
 from . import BO4ML, Forbidden,ObjectiveFunction, stac, \
-    ConfigSpace, ConditionalSpace, Extension, rand, tpe, anneal, atpe, Trials
+    ConfigSpace, ConditionalSpace, STATUS_FAIL
 __author__ = "Duc Anh Nguyen"
 BIG_VALUE=9999999999999
 class DACOpt(object):
@@ -36,10 +36,11 @@ class DACOpt(object):
                  hpo_algo= 'tpe',
                  hpo_max_queue_len=None,
                  show_message=False,
-                 isFlatSetting=True
+                 isFlatSetting=True,
+                 ifFoB=STATUS_FAIL,
                  ):
         #DACOpt: parameter setting
-        newObjFunc=ObjectiveFunction.ObjectiveFunction(obj_func,conditional,forbidden,hpo_prefix,minimize,isFlatSetting)
+        newObjFunc=ObjectiveFunction.ObjectiveFunction(obj_func,conditional,forbidden,hpo_prefix,minimize,isFlatSetting,ifFoB)
         self.eta=eta
         self.eval_count = 0
         self.stop_dict = {}
@@ -190,12 +191,13 @@ class DACOpt(object):
                 self.eval_count = np.sum([x for x in self.lseval_count.values()])
                 if self.timeout == None:
                     max_eval = self.max_eval - self.eval_count
-                    eval_race = max_eval / (num_races - iround)
+                    eval_race = max_eval / num_races#(num_races - iround)
                 else:
                     eval_race = self.eval_count / iround + 1
                 lsThisRound = self.TopHighest(self._lsCurrentBest, num_candidate,self.selected_strategy,_processedID)
                 _processID = sorted([x for x, _ in lsThisRound])
                 num_candidate = len(lsThisRound)
+                #print(eval_race / num_candidate)
                 cd_add_eval = int(np.floor(eval_race / num_candidate)) if num_candidate!=0 else 0
                 # print('_processID: ',_processID)
                 if (num_candidate == 1 and self.timeout == None):
@@ -218,24 +220,32 @@ class DACOpt(object):
         return  _processID, _lsstep_size, num_candidate
     def ContestProcedure(self):
         trials = dict()
-        lsRace = self.calculateSH()
+        lsRace = self.calculateSH(self.number_candidates)
         num_races = len(lsRace)
         _global_timeout=self.timeout
         #_avg_RuntimePerRound=self.timeout/num_races
         #print(_avg_RuntimePerRound)
         _processID=None
-        for iround, num_candidate in lsRace.items():
+        #for iround, num_candidate in lsRace.items():
+        num_candidate=lsRace[0]
+        iround=0
+        while (num_candidate>=1):
+            #print('HECK:',iround, num_candidate,num_races)
             _strRound=('INIT' if iround == 0 else iround)
             _startime=time.time()
             _processedID=_processID if _processID!=None else None
             _processID, _lsstep_size, num_candidate= self._createRoundParameters(iround, num_races,num_candidate,_processedID)
+
             if self.show_message:print("Start Round: ", _strRound, " === ", num_candidate, " search space(s) === runs:",_lsstep_size)
             _lsstep_size_temp = _lsstep_size
+            if sum(_lsstep_size)==0:
+                num_candidate=0
+                break
             _before= [x for i,x in self.lseval_count.items() if i in _processID]if len(self.lseval_count)>0 else [0]*num_candidate
             _avg_RuntimePerRound,_remain_time_this_round=None, None
             if self.timeout != None:
                 self.timeout = _global_timeout- (time.time() - self.start_time)
-                _avg_RuntimePerRound = (self.timeout / (num_races - iround)) #if iround!=0 else self.timeout
+                _avg_RuntimePerRound = (self.timeout /num_races)# (num_races - iround)) #if iround!=0 else self.timeout
                 _remain_time_this_round = _avg_RuntimePerRound if iround!=0 else self.timeout
                 if self.timeout <= 0:
                     print('DACOpt message: TimeOut')
@@ -274,14 +284,20 @@ class DACOpt(object):
                     else:
                         _lsstep_size_temp = 0
                         if self.show_message:
-                            print('Round', _strRound, 'message: Timeout for this round-- Runtime counted: ', time.time() - self.start_time)
-                            print(('Go to the next round') if iround<num_races-1 else ('Finished'))
+                            _timeleft=time.time() - self.start_time
+                            print('Round', _strRound, 'message: Timeout for this round-- Runtime counted: ',_timeleft)
+                            print(('Go to the next round') if _timeleft>0 else ('Finished'))
                         continue
                     _remain_time_this_round = _avg_RuntimePerRound - (
                             time.time() - _startime) if self.timeout != None else 0
                 else:
                     _lsstep_size_temp = 0
             _=self._updateAllresults(_processID)
+            iround += 1
+            lsRace = self.calculateSH(num_candidate)
+            num_races = len(lsRace)
+            num_candidate = lsRace[1] if num_races>1 else 1
+            #print('num_candidate',num_candidate)
         try:
             best_cdid = self.TopHighest(self._lsCurrentBest,1,Strategy='Highest')
             best_incumbent, best_value = self._lsincumbent[best_cdid[0][0]], self._lsCurrentBest[best_cdid[0][0]]
@@ -326,7 +342,7 @@ class DACOpt(object):
             self._lsAllResults[ids] = [x['loss'] for x in _trials_results if x['status'] == 'ok']
         return
     def RunwithBudget(self,sp_id,budgets, round_id, timeout=None):
-        #print(sp_id,budget, round_id)
+        #print(sp_id,budgets, round_id,timeout)
         budget=budgets[sp_id] if isinstance(budgets,list) else budgets
         xopt,fopt=None,None
         if 1==1:
@@ -420,10 +436,10 @@ class DACOpt(object):
         #except Exception as e:
         #    print('New ERROR:::Round-',round_id, '--msg:', e)
 
-    def calculateSH(self) -> OrderedDict():
+    def calculateSH(self, number_candidates=None) -> OrderedDict():
         lsEval = OrderedDict()
         if self.stat==False:
-            remain_candidate = self.number_candidates
+            remain_candidate = self.number_candidates if number_candidates==None else number_candidates
             ratio = 1 / self.eta
             a = 0
             lsEval[a] = remain_candidate
@@ -432,7 +448,7 @@ class DACOpt(object):
                 remain_candidate = np.ceil(remain_candidate * ratio)
                 lsEval[a] = int(remain_candidate)
         else:
-            remain_candidate = self.number_candidates
+            remain_candidate = self.number_candidates if number_candidates==None else number_candidates
             lsEval[0] = remain_candidate
             lsEval[1] = remain_candidate
         return lsEval
@@ -459,9 +475,20 @@ class DACOpt(object):
         lsThisRound = list(OrderedDict(sorted(_lsCurrentBest.items(), key=lambda item: item[1],
                                               reverse=_reverse)).items())[:num_candidate]
         _worstValue= round((max if self.isminize else min)([x for i,x in lsThisRound]),5)
+        #print(_worstValue)
         if num_candidate > 1:
             #If there are candidates with extract the same values
-            lsThisRound.extend([(i,x) for i,x in _lsCurrentBest.items() if (round(x,5)<=  _worstValue if self.isminize else round(x,5)>=  _worstValue) and i not in [_[0] for _ in lsThisRound]])
+            if self.isminize:
+                _tobeAdd=[(i,x) for i,x in _lsCurrentBest.items() if (round(x,5)<=  _worstValue if _worstValue>0 else False) and i not in [_[0] for _ in lsThisRound]]
+                #lsThisRound.extend([(i,x) for i,x in _lsCurrentBest.items() if (round(x,5)<=  _worstValue if _worstValue>0 else False) and i not in [_[0] for _ in lsThisRound]])
+            else:
+                _tobeAdd =[(i,x) for i,x in _lsCurrentBest.items() if (round(x,5)>=  _worstValue if _worstValue<1 else False) and i not in [_[0] for _ in lsThisRound]]
+            if len(_tobeAdd)+len(lsThisRound)<len(_lsCurrentBest):
+                lsThisRound.extend(_tobeAdd)
+                #print(len(_tobeAdd)+_worstValue,len(_lsCurrentBest),_tobeAdd)
+            else:
+                lsThisRound = [x for x in lsThisRound if x[1]!=_worstValue]
+                #if self.isminize else round(x,5)>=  _worstValue) and i not in [_[0] for _ in lsThisRound]])
         else:
             pass
         '''if len(lsThisRound)>1 and num_candidate==1:

@@ -1,18 +1,16 @@
 from __future__ import absolute_import
-from . import BO4ML, Forbidden, \
-    ConfigSpace, ConditionalSpace, Extension, rand, tpe, anneal, atpe, Trials
-from hyperopt import STATUS_FAIL, STATUS_OK
-import numpy as np
+from . import Forbidden, ConditionalSpace, STATUS_FAIL
 import time
 __author__ = "Duc Anh Nguyen"
 class ObjectiveFunction(object):
-    def __init__(self,objFunc, cons:ConditionalSpace, fob: Forbidden, prefix='value', isMinimize=True,isFlatSetting=False):
+    def __init__(self,objFunc, cons:ConditionalSpace, fob: Forbidden, prefix='value', isMinimize=True,isFlatSetting=False, ifFOB=STATUS_FAIL):
         self.cons=cons
         self.objFunc=objFunc
         self.FoB=fob
         self.prefix=prefix
         self.isMinimize=isMinimize
         self.isFlat=isFlatSetting
+        self.returnIfFoB=ifFOB
 
     def call(self,params):
         start=time.time()
@@ -22,7 +20,7 @@ class ObjectiveFunction(object):
         _params = self._getparamflat(params)
         if self._checkFobidden(_params):
             #print('invalid')
-            return {'loss': 1 if self.isMinimize else 0, 'status': STATUS_FAIL, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
+            return {'loss': 1 if self.isMinimize else 0, 'status': self.returnIfFoB, 'runtime': time.time() - start, 'msg': "INVALID PARAMS"}
         '''activeLst=self.getActive(_params)
         for x in [x for x in _params.keys() if x not in activeLst]:
             #pass

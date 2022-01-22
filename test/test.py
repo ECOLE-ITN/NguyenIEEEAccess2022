@@ -157,9 +157,12 @@ resampler_group={'NO':'NO','NONE':'NONE','SMOTE':'OVER','BorderlineSMOTE':'OVER'
                             'TomekLinks':'UNDER','ClusterCentroids':'UNDER'}
 rstate = np.random.RandomState(9)
 def new_obj(params):
-    print(params)
+
     global resampler_group,i,rstate
+    classifier = params['classifier'].pop('name')
     i=i+1
+    #print(i,params)
+    #time.sleep(1)
     '''Anh=params['Anh']['name']
     time.sleep(0.01)
     params_C = params['classifier']
@@ -172,7 +175,10 @@ def new_obj(params):
     sampler = resampler_group[p_sub_type]
     #print(classifier,p_sub_type,sampler)
     _result = np.random.uniform(0, 0.5) if Anh=='ANH' else np.random.uniform(0.1,1)'''
-    _result =np.random.uniform(0, 1)
+    if classifier == 'SVM':
+        time.sleep(1)
+
+    _result =np.random.uniform(0, 1) if classifier=='SVM' else 1
     #print(i,classifier,sampler,p_sub_type,_result)
     #if i>248:
     #print(i,_result)
@@ -199,13 +205,14 @@ def obj_func(params):
 i=0
 from hyperopt import Trials
 import time
+from dacopt import STATUS_OK, STATUS_FAIL
 thistrial=Trials()
 opt = DACOpt(search_space, new_obj, conditional=con, hpo_prefix="name", isDaC=True,
-                HPOopitmizer='hpo', random_seed=1, max_threads=2
+                HPOopitmizer='bo4ml', random_seed=1, max_threads=1
                 ,eta=2,hpo_trials=thistrial,compare_strategy='highest',
                 max_eval=250,hpo_algo='TPE',show_message=True,
-            number_candidates=10, timeout= None,n_init_sp=10
-            , n_init_sample=5, isFlatSetting=False  )
+            number_candidates=10, timeout= 5,n_init_sp=10
+            , n_init_sample=5, isFlatSetting=False, ifFoB=STATUS_OK  )
 _starttime=time.time()
 opt.start_time=time.time()
 xopt, fopt, _, eval_count = opt.run()

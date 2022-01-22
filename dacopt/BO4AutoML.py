@@ -1,14 +1,4 @@
 from __future__ import absolute_import
-from BanditOpt.BO4ML import BO4ML
-from BanditOpt.ConditionalSpace import ConditionalSpace
-from BanditOpt.ConfigSpace import ConfigSpace
-from BanditOpt.Forbidden import Forbidden
-from Component.mHyperopt import hyperopt
-from Component.mHyperopt import rand, tpe, anneal, atpe, Trials
-from BanditOpt import CategoricalParam, FloatParam, Forbidden, \
-    IntegerParam, ConfigSpace, ConditionalSpace, AlgorithmChoice, HyperParameter
-from BanditOpt.HyperoptConverter import SubToHyperopt, OrginalToHyperopt, ForFullSampling
-from BanditOpt.HyperParameter import paramrange, p_paramrange, one_paramrange
 import numpy as np
 from copy import deepcopy
 from collections import Counter
@@ -106,7 +96,7 @@ def runBOWithLimitBudget(self, added_budget):
     while (self.ieval_count < Total_max_evals and ((self.timeout - (time.time() - self.start_time)>0) if self.timeout != None else True)  ):
         _thisStepsize = Total_max_evals-self.ieval_count
         if self.isInitMode:
-            #print('______INIT________')  # if self.isInitMode else '*****BO*****')
+            #print('______INIT________',self.timeout)  # if self.isInitMode else '*****BO*****')
             if self.isFullSearch:
                 #while self._imax_eval<Total_max_evals:
                 _randomOrder = [x for x, v in enumerate(self._lsstep_size) if v > 0 and x not in self.InValidSP]
@@ -138,16 +128,31 @@ def runBOWithLimitBudget(self, added_budget):
                     # self.BO.max_evals = _max_eval
                     # self.BO.fix_max_evals = Total_max_evals
                     #self.BO.rstate = self.rstate
+
                     self.BO.timeout = self.timeout - (
                             time.time() - self.start_time) if self.timeout != None else None
+
                     _results= self.BO.AddBudget_run(_thisStepsize)
                     self.isInitMode = True if self._imax_eval <= self._max_init else False
             else:
                 #self.BO.fix_max_evals = Total_max_evals
                 #self.BO.rstate = self.rstate
-                _thisStepsize = added_budget
-                self.BO.timeout = self.timeout - (time.time() - self.start_time) if self.timeout != None else None
-                _results= self.BO.AddBudget_run(added_budget)
+                #_thisStepsize = added_budget
+                #self.BO.timeout = self.timeout - (time.time() - self.start_time) if self.timeout != None else None
+                #print(_thisStepsize)
+                _smallStep=1 #hack for control runtime
+                if self.timeout!= None:
+                    added_budget = 0
+                    while added_budget <_thisStepsize:
+                        added_budget+=_smallStep
+                        self.BO.timeout = self.timeout - (time.time() - self.start_time) if self.timeout != None else None
+                        #print('______INIT________', self.timeout, self.BO.timeout)
+                        if self.BO.timeout<0:
+                            break
+                        _results= self.BO.AddBudget_run(_smallStep)
+                        #print(_results)
+                else:
+                    _results = self.BO.AddBudget_run(_thisStepsize)
                 self.isInitMode = True if self._imax_eval < self._max_init else False
         else:
             _thisStepsize = Total_max_evals - self.ieval_count

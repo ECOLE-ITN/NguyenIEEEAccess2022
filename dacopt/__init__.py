@@ -5,6 +5,7 @@ from BanditOpt.ConfigSpace import ConfigSpace
 from BanditOpt.Forbidden import Forbidden
 from Component.mHyperopt import hyperopt
 from Component.mHyperopt import rand, tpe, anneal, atpe, Trials
+from hyperopt import STATUS_OK,STATUS_FAIL
 from BanditOpt import CategoricalParam, FloatParam, Forbidden, \
     IntegerParam, ConfigSpace, ConditionalSpace, AlgorithmChoice, HyperParameter
 from BanditOpt.HyperoptConverter import SubToHyperopt, OrginalToHyperopt, ForFullSampling
@@ -28,4 +29,4 @@ import dacopt.stac as stac
 __all__ = ['DACOpt','BO4ML', 'ConditionalSpace', 'ConfigSpace', 'Forbidden','HyperParameter','ObjectiveFunction',
            'CategoricalParam', 'FloatParam', 'AlgorithmChoice','paramrange', 'p_paramrange', 'one_paramrange',
     'IntegerParam', 'ConfigSpace', 'ConditionalSpace','hyperopt',
-           'SubToHyperopt', 'OrginalToHyperopt', 'ForFullSampling', 'Extension','ParamsExt','rand', 'tpe', 'anneal', 'atpe', 'Trials','stac']
+           'SubToHyperopt', 'OrginalToHyperopt', 'ForFullSampling', 'Extension','ParamsExt','rand', 'tpe', 'anneal', 'atpe', 'Trials','stac','STATUS_OK','STATUS_FAIL']
