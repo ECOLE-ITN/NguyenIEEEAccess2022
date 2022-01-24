@@ -163,18 +163,6 @@ def new_obj(params):
     i=i+1
     #print(i,params)
     #time.sleep(1)
-    '''Anh=params['Anh']['name']
-    time.sleep(0.01)
-    params_C = params['classifier']
-    #time.sleep(np.random.choice([0,0.5,1,3]))
-    classifier = params_C.pop('name')
-    #if classifier=='SVM':
-    #    print(params_C['gamma'])
-    p_sub_params = params.pop('resampler')
-    p_sub_type = p_sub_params.pop('name') if isinstance(p_sub_params,dict) else p_sub_params
-    sampler = resampler_group[p_sub_type]
-    #print(classifier,p_sub_type,sampler)
-    _result = np.random.uniform(0, 0.5) if Anh=='ANH' else np.random.uniform(0.1,1)'''
     if classifier == 'SVM':
         time.sleep(1)
 
