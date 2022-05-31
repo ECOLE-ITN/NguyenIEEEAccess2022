@@ -7,7 +7,7 @@ setup(
     packages=['dacopt', 'dacopt.stac'],
     url='',
     license='GPL-3.0 License',
-    author='Hidden for Anonymity',
-    author_email='Hidden for Anonymity',
+    author='Duc Anh Nguyen',
+    author_email='d.a.nguyen@liacs.leidenuniv.nl',
     description='DACOpt'
 )
