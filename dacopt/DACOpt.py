@@ -6,7 +6,7 @@ from scipy.stats import friedmanchisquare, ttest_ind, wilcoxon
 import numpy as np
 from . import BO4ML, Forbidden,ObjectiveFunction, stac, \
     ConfigSpace, ConditionalSpace, STATUS_FAIL
-__author__ = "Hidden for Anonymity"
+__author__ = "Duc Anh Nguyen"
 BIG_VALUE=9999999999999
 class DACOpt(object):
     def __init__(self, search_space: ConfigSpace,

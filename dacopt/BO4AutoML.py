@@ -7,6 +7,7 @@ import math, time
 from . import hyperopt as HO
 from . import rand,tpe, anneal,atpe
 from functools import partial
+__author__ = "Duc Anh Nguyen"
 def InitialModel(self, search_space):
     #np.random.seed(self.seed)
     self.rstate = np.random.RandomState(self.seed) if not hasattr(self, 'rstate') else self.rstate

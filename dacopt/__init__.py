@@ -25,6 +25,7 @@ import dacopt.BO4AutoML as BO4AutoMLExt
 BO4ML.runBOWithLimitBudget=BO4AutoMLExt.runBOWithLimitBudget
 BO4ML.InitialModel=BO4AutoMLExt.InitialModel
 HyperParameter.__init__=ParamsExt.__init__
+__author__ = "Duc Anh Nguyen"
 import dacopt.stac as stac
 __all__ = ['DACOpt','BO4ML', 'ConditionalSpace', 'ConfigSpace', 'Forbidden','HyperParameter','ObjectiveFunction',
            'CategoricalParam', 'FloatParam', 'AlgorithmChoice','paramrange', 'p_paramrange', 'one_paramrange',

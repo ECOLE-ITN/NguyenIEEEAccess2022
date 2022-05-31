@@ -9,7 +9,7 @@ from typing import Union, List, Dict, Optional
 from numpy.random import randint
 import itertools, collections, math, time
 from . import ParamsExt
-
+__author__ = "Duc Anh Nguyen"
 def Combine(self, Conditional: ConditionalSpace = None, Forbidden: Forbidden = None,
             isBandit: bool = True,sp_cluster=1, ifAllSolution=False, random_seed=0, min_sp=3,
             n_init_sp=None, max_eval=500, init_sample=10, number_candidates=10,sample_sp=5, init_ratio=0.2) -> List[HyperParameter]:

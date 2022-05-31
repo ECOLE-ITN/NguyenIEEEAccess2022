@@ -4,7 +4,7 @@ import numpy as np
 import math
 from . import paramrange, p_paramrange, one_paramrange
 from . import AlgorithmChoice, HyperParameter, CategoricalParam
-
+__author__ = "Duc Anh Nguyen"
 def get_level(algorithmsLst, _i=0):
     _ii = []
     _i += 1

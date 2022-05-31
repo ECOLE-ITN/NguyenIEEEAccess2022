@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from . import Forbidden, ConditionalSpace, STATUS_FAIL
 import time
-__author__ = "Hidden for Anonymity"
+__author__ = "Duc Anh Nguyen"
 class ObjectiveFunction(object):
     def __init__(self,objFunc, cons:ConditionalSpace, fob: Forbidden, prefix='value', isMinimize=True,isFlatSetting=False, ifFOB=STATUS_FAIL):
         self.cons=cons
