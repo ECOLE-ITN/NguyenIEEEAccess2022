@@ -37,7 +37,7 @@ cd DACOpt && python setup.py install --user
 
 ## Example
 
-See our [experiments folder](https://github.com/ECOLE-ITN/DACOpt/DACOpt_experiment)
+See our [experiments folder](https://github.com/ECOLE-ITN/DACOpt/tree/main/Experiments)
 
 ## Citation
 ### Paper Reference
