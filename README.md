@@ -1,4 +1,4 @@
-#An Efficient Contesting Procedure for AutoML Optimization
+##DACOpt: An Efficient Contesting Procedure for AutoML Optimization
 
 ### Contact us
 
