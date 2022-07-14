@@ -27,17 +27,17 @@ pip install DACOpt
 Or, take the lastest version from github:
 
 ```shell
-pip install git+https://github.com/ECOLE-ITN/DACOpt.git
+pip install git+https://github.com/ECOLE-ITN/NguyenIEEEAccess2022.git
 ```
 --
 ```shell
-git clone https://github.com/ECOLE-ITN/DACOpt.git
+git clone https://github.com/ECOLE-ITN/NguyenIEEEAccess2022.git
 cd DACOpt && python setup.py install --user
 ```
 
 ## Example
 
-See our [experiments folder](https://github.com/ECOLE-ITN/DACOpt/tree/main/Experiments)
+See our [experiments folder](https://github.com/ECOLE-ITN/NguyenIEEEAccess2022/tree/main/Experiments)
 
 ## Citation
 ### Paper Reference
