@@ -32,7 +32,7 @@ pip install git+https://github.com/ECOLE-ITN/NguyenIEEEAccess2022.git
 --
 ```shell
 git clone https://github.com/ECOLE-ITN/NguyenIEEEAccess2022.git
-cd DACOpt && python setup.py install --user
+cd NguyenIEEEAccess2022 && python setup.py install --user
 ```
 
 ## Example
