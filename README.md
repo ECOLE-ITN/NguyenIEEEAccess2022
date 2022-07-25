@@ -42,15 +42,15 @@ See our [experiments folder](https://github.com/ECOLE-ITN/NguyenIEEEAccess2022/t
 ## Citation
 ### Paper Reference
 
-Duc Anh Nguyen, Anna V. Kononova, Stefan Menzel, Bernhard Sendhoff and Thomas Bäck, "An Efficient Contesting Procedure for AutoML Optimization," in IEEE Access, 2022, doi: 10.1109/ACCESS.2022.3192036.
+Duc Anh Nguyen, Anna V. Kononova, Stefan Menzel, Bernhard Sendhoff and Thomas Bäck, "An Efficient Contesting Procedure for AutoML Optimization," in IEEE Access, vol. 10, pp. 75754-75771, 2022, doi: 10.1109/ACCESS.2022.3192036.
 
 ### BibTex Reference
-    @ARTICLE{9832605,  
-    author={Nguyen, Duc Anh and Kononova, Anna V. and Menzel, Stefan and Sendhoff, Bernhard and Bäck, Thomas},  
+    @ARTICLE{9832605,  author={Nguyen, Duc Anh and Kononova, Anna V. and Menzel, Stefan and Sendhoff, Bernhard and Bäck, Thomas},  
     journal={IEEE Access},   
     title={An Efficient Contesting Procedure for AutoML Optimization},   
-    year={2022},  volume={},  number={},  
-    pages={1-1},  
+    year={2022},  
+    volume={10},  number={},  
+    pages={75754-75771},  
     doi={10.1109/ACCESS.2022.3192036}}
 ## Acknowledgment
 
